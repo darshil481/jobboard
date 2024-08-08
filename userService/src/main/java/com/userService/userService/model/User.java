@@ -8,84 +8,42 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Email
     @NotBlank
     private String email;
+
     @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$")
     @NotBlank
     private String mobile;
+
     @NotBlank
     private String password;
+
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
-    // No-argument constructor
+
+    private Boolean is_active = true;
+    private Boolean sms_notification_active = true;
+    private Boolean email_notification_active = true;
+
     public User() {
     }
-    // Getter and Setter for id
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    // Getter and Setter for email
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    // Getter and Setter for mobile
-    public String getMobile() {
-        return mobile;
-    }
-
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
-    }
-
-    // Getter and Setter for password
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    // Getter and Setter for createAt
-    public LocalDateTime getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(LocalDateTime createAt) {
-        this.createAt = createAt;
-    }
-
-    // Getter and Setter for updateAt
-    public LocalDateTime getUpdateAt() {
-        return updateAt;
-    }
-
-    public void setUpdateAt(LocalDateTime updateAt) {
-        this.updateAt = updateAt;
-    }
-
-
-    // All-arguments constructor
     public User(Long id, String email, String mobile, String password, LocalDateTime createAt, LocalDateTime updateAt) {
         this.id = id;
         this.email = email;
@@ -94,13 +52,64 @@ public class User {
         this.createAt = createAt;
         this.updateAt = updateAt;
     }
+
     @PrePersist
     protected void onCreate() {
         createAt = LocalDateTime.now();
     }
+
     @PreUpdate
     protected void onUpdate() {
         updateAt = LocalDateTime.now();
     }
 
+    // Implementing UserDetails methods
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // You can customize this part based on your role/authority setup
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return is_active;
+    }
+
+    public void setEmail(String email) {
+        setEmail(email);
+    }
+
+    public void setMobile(String mobile) {
+        setMobile(mobile);
+    }
+
+    public void setPassword(String password) {
+        setPassword(password);
+    }
+    // Getters and setters...
 }
